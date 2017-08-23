@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-
+# 贴吧的帖子,最后保存在一个文件里面
 import urllib
 import urllib2
 import re
