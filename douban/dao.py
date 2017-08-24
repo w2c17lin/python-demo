@@ -5,7 +5,7 @@ import log
 
 class Dao(object):
 	def __init__(self, log):
-		self.db = MySQLdb.connect("127.0.0.1", "root", "qwe123", "douban", charset = "utf8")
+		self.db = MySQLdb.connect("127.0.0.1", "root", "root", "douban", charset = "utf8")
 		self.cursor = self.db.cursor()
 		self.log = log
 
