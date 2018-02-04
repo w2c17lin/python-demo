@@ -59,7 +59,7 @@ class Log():
         self.writelog(info, 'ERROR')
 
     def w(self, info):
-        self.writelog(info, 'WARM ')
+        self.writelog(info, 'WARN ')
 
     def i(self, info):
         self.writelog(info, 'INFO ')
