@@ -19,5 +19,13 @@ class MySQLDao():
     def __del__(self):
         self.close()
 
+    def insert(data):
+        """
+        插入数据
+
+        @param data 要插入的数据,字典类型
+        """
+        pass
+
     def close(self):
         self.__db.close()

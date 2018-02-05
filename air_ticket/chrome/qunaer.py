@@ -7,7 +7,7 @@ QUNAER_URL = 'https://flight.qunar.com/site/oneway_list.htm?searchDepartureAirpo
 
 
 class Qunaer():
-    def __init__(self, browser):
+    def __init__(self, browser, dao):
         """
         构造函数
 
@@ -16,6 +16,7 @@ class Qunaer():
         """
         self.__log = logging.getLogger('app.qunaer')
         self.__brower = browser
+        self.__dao = dao
 
     def crawling(self, air_line, time):
         """
@@ -25,5 +26,15 @@ class Qunaer():
         @param time 要爬取的航班时间
         """
         for value in air_line:
-            self.__log.debug(
-                repalce_url(QUNAER_URL, value['from'], value['to'], time), 'qunaer')
+            url = repalce_url(QUNAER_URL, value['from'], value['to'], time)
+            self.__log.debug('获取去哪儿机票信息 from %s to %s time %s',
+                             value['from'], value['to'], time)
+            self.__chrome(url)
+
+    def __chrome(self, url):
+        """
+        开始获取数据
+
+        @param url 已经构造好的网页地址
+        """
+        self.__browser.get(url)
