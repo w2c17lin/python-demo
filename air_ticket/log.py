@@ -13,57 +13,68 @@ TIME_FORMAT = '%Y-%m-%d %X'
 
 
 class Log():
-    def __init__(self, logdir_name='logs'):
-        self.file = None
-        self.log_path = './' + logdir_name
-        self.file_name = time.strftime(DATE_FORMAT, time.localtime())
-        self.mkdir()
+    def __init__(self, logdir_name='logs', flush_time=30):
+        """
+        初始化方法,默认log文件夹为当前文件下的logs,默认缓存次数为30
+        """
+        self.__file = None
+        self.__log_path = './' + logdir_name
+        self.__flush_time = flush_time
+        self.__flush_count = 0
+        self.__file_name = time.strftime(DATE_FORMAT, time.localtime())
+        self.__mkdir()
 
     def __del__(self):
-        # 关闭文件
-        self.close_file()
+        self.__close_file()  # 关闭文件
 
-    def mkdir(self):
-        # 新建文件夹
-        is_exists = os.path.exists(self.log_path)
+    def __mkdir(self):
+        is_exists = os.path.exists(self.__log_path)  # 新建文件夹
         if not is_exists:
-            os.makedirs(self.log_path)
+            os.makedirs(self.__log_path)
 
-    def close_file(self):
-        if self.file != None:
-            self.file.close()
+    def __close_file(self):
+        if self.__file != None:
+            self.__file.close()
 
-    def mkfile(self):
-        # 新建当前日期的文件
-        self.close_file()
-        self.file_name = time.strftime(DATE_FORMAT, time.localtime())
-        self.file = open(self.log_path + '/' + self.file_name + '.log',
-                         mode='a', encoding='utf-8')
+    def __mkfile(self):
+        """
+        新建当前日期的文件
+        """
+        self.__close_file()
+        self.__file_name = time.strftime(DATE_FORMAT, time.localtime())
+        self.__file = open(self.__log_path + '/' + self.__file_name + '.log',
+                           mode='a', encoding='utf-8')
 
-    def write_log(self, info, level):
+    def __flush(self):
+        """
+        刷入缓存,直接根据次数
+        """
+        if(self.__flush_count >= self.__flush_time):
+            self.__file.flush()
+            self.__flush_count = 0
+        else:
+            self.__flush_count = self.__flush_count + 1
+
+    def __write_log(self, info, level):
         date = time.strftime(DATE_FORMAT, time.localtime())
-        if self.file == None:
-            # 如果是第一次写入，就新建文件
-            self.mkfile()
-        elif date != self.file_name:
-            # 如果日期不对应，就新建文件
-            self.mkfile()
-        # 写log级别和日期
-        self.file.write(
-            '[' + level + time.strftime(TIME_FORMAT, time.localtime()) + '] - ')
-        # 写log内容
-        self.file.write(info + '\n')
-        # 立即写入文件
-        self.file.flush()
+        if self.__file == None:
+            self.__mkfile()  # 如果是第一次写入，就新建文件
+        elif date != self.__file_name:
+            self.__mkfile()  # 如果日期不对应，就新建文件
+        str = '[' + level + \
+            time.strftime(TIME_FORMAT, time.localtime()) + '] - ' + info
+        self.__file.write(str + '\n')  # 写log内容
+        print(str)
+        self.__flush()  # 立即写入文件
 
     def error(self, info):
-        self.write_log(info, 'ERROR')
+        self.__write_log(info, 'ERROR')
 
     def warn(self, info):
-        self.write_log(info, 'WARN ')
+        self.__write_log(info, 'WARN ')
 
     def info(self, info):
-        self.write_log(info, 'INFO ')
+        self.__write_log(info, 'INFO ')
 
     def debug(self, info):
-        self.write_log(info, 'DEBUG')
+        self.__write_log(info, 'DEBUG')
