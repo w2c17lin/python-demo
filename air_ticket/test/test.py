@@ -17,14 +17,14 @@ else:
 # root_logger.debug('test root logger...')
 
 
-# options = webdriver.ChromeOptions()
-# options.add_argument('headless')
+options = webdriver.ChromeOptions()
+options.add_argument('headless')
 
-# browser = webdriver.Chrome('./chromedriver.exe', chrome_options=options)
-# browser.get('http://www.baidu.com/')
-# title = browser.title
-# body = browser.find_element_by_xpath('/html/body').text
-# print(title)
-# print(body)
+browser = webdriver.Chrome('./chromedriver.exe', chrome_options=options)
+browser.get('http://www.baidu.com/')
+title = browser.title
+body = browser.find_element_by_xpath('/html/body').text
+print(title)
+print(body)
 
 # browser.quit()
