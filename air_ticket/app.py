@@ -9,7 +9,7 @@ from utils.dao import MySQLDao
 
 logging.config.fileConfig('./res/logging.conf')
 
-dao = MySQLDao()
+dao = MySQLDao('./res/mysql.conf')
 # options = webdriver.ChromeOptions()
 # options.add_argument('headless')
 

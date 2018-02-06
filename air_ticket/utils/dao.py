@@ -1,25 +1,41 @@
 #!/usr/bin/python
 # -*- coding:utf-8 -*-
+import configparser
 import logging
+
 import pymysql
 
-MYSQL_URL = '127.0.0.1'  # 数据库链接
-MYSQL_DATABASE = 'yanji_web'  # 数据库名字
-MYSQL_USERNAME = 'root'  # 数据库账号
-MYSQL_PASSWORD = 'root'  # 数据库密码
+DB_SECTION = 'db'
+URL_OPTION = 'url'
+USERNAME_OPTION = 'username'
+PASSWORD_OPTION = 'password'
+DATABASE_OPTION = 'database'
 
 
 class MySQLDao():
-    def __init__(self):
+    def __init__(self, path):
         self.__log = logging.getLogger('app.dao')
-        self.__db = pymysql.connect(
-            MYSQL_URL, MYSQL_USERNAME, MYSQL_PASSWORD, MYSQL_DATABASE, charset="utf8")
+        self.__db = self.__connect(path)
         self.__cursor = self.__db.cursor()
 
     def __del__(self):
         self.close()
 
-    def insert(data):
+    def __connect(self, path):
+        """
+        获取数据库链接
+
+        @param path 配置文件
+        """
+        cf = configparser.ConfigParser()
+        cf.read(path)
+        url = cf.get(DB_SECTION, URL_OPTION)
+        username = cf.get(DB_SECTION, USERNAME_OPTION)
+        password = cf.get(DB_SECTION, PASSWORD_OPTION)
+        database = cf.get(DB_SECTION, DATABASE_OPTION)
+        return pymysql.connect(url, username, password, database, charset="utf8")
+
+    def insert(self, data):
         """
         插入数据
 
