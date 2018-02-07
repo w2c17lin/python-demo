@@ -36,7 +36,6 @@ class Tuniu():
                 url = repalce_url(
                     TUNIU_URL, value['from_code'], value['to_code'], time)
                 self.__chrome(url)
-                return
             except Exception as e:
                 self.__log.debug('获取途牛机票信息失败 from %s to %s time %s Exception: \n%s' % (
                     value['from'], value['to'], time, e))
@@ -53,13 +52,6 @@ class Tuniu():
 
         elements = self.__browser.find_elements_by_xpath(
             '//div[@class="J-flightlist"]')
-
-        i =0 
-        for e in elements:
-            print(elements[i].find_element_by_xpath(
-                './/div[@class="fl-logo"]//div[@class="aircom"]').text)
-            i = i+1
-        return
         index_list = random_num(len(elements))
         self.__log.debug('随机抓取10条机票信息: %s' % (index_list))
 
@@ -90,8 +82,6 @@ class Tuniu():
         print('price_elements %d' % (len(price_elements)))
 
         for index in index_list:
-            s = index * 2
-            e = s + 1
             air = {
                 'source': TUNIU_SOURCE,
                 'spider_time': datetime.now(),
