@@ -3,18 +3,54 @@
 # 获取数据间隔时间
 INTERVAL_TIME = 3 * 60 * 60
 
-# 航班路线
+# 航班路线,共8个
 AIR_LINE = [
-    {'from': '上海', 'to': '北京'},
-    {'from': '深圳', 'to': '重庆'},
-    {'from': '广州', 'to': '海口'},
-    {'from': '长沙', 'to': '青岛'},
-    {'from': '贵阳', 'to': '天津'},
-    {'from': '大连', 'to': '兰州'},
-    {'from': '成都', 'to': '昆明'},
-    {'from': '杭州', 'to': '厦门'},
-    {'from': '郑州', 'to': '三亚'},
-    {'from': '南宁', 'to': '沈阳'},
-    {'from': '济南', 'to': '长春'},
-    {'from': '哈尔冰', 'to': '南京'}
+    {
+        'from': '上海',
+        'from_code': 'SHA',
+        'to': '北京',
+        'to_code': 'BJS'
+    },
+    {
+        'from': '深圳',
+        'from_code': 'SZX',
+        'to': '重庆',
+        'to_code': 'CKG'
+    },
+    {
+        'from': '贵阳',
+        'from_code': 'KWE',
+        'to': '天津',
+        'to_code': 'TSN'
+    },
+    {
+        'from': '大连',
+        'from_code': 'DLC',
+        'to': '兰州',
+        'to_code': 'CAN'
+    },
+    {
+        'from': '成都',
+        'from_code': 'CTU',
+        'to': '昆明',
+        'to_code': 'KMG'
+    },
+    {
+        'from': '杭州',
+        'from_code': 'HGH',
+        'to': '厦门',
+        'to_code': 'XMN'
+    },
+    {
+        'from': '南宁',
+        'from_code': 'NNG',
+        'to': '沈阳',
+        'to_code': 'SHE'
+    },
+    {
+        'from': '济南',
+        'from_code': 'TNA',
+        'to': '长春',
+        'to_code': 'CGQ'
+    }
 ]

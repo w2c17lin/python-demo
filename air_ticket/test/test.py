@@ -23,7 +23,7 @@ options.add_argument('headless')
 browser = webdriver.Chrome('./chromedriver.exe', chrome_options=options)
 browser.get('http://www.baidu.com/')
 title = browser.title
-body = browser.find_element_by_xpath('/html/body').location_once_scrolled_into_view()
+body = browser.find_element_by_xpath('/html/body').get_attribute('data-flight')
 print(title)
 print(body)
 
