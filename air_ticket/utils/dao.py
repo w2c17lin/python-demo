@@ -13,9 +13,6 @@ USERNAME_OPTION = 'username'
 PASSWORD_OPTION = 'password'
 DATABASE_OPTION = 'database'
 
-INSERT_SQL = 'insert into air_ticket(source, airline, filght, depart_time, arrive_time, space_time, depart_airport, arrive_airport, price, create_time) \
-    VALUES ("%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%d", "%s")'
-
 
 class MySQLDao():
     def __init__(self, path):
@@ -54,7 +51,8 @@ class MySQLDao():
             self.__cursor.execute(sql)
             self.__db.commit()
         except Exception as e:
-            self.__log.error('插入数据库失败: %s' % e)
+            self.__log.error('插入数据库失败 Exception: \n%s' % e)
 
     def close(self):
-        self.__db.close()
+        if not self.__db._closed:
+            self.__db.close()

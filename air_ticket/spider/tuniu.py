@@ -6,7 +6,7 @@ from datetime import datetime
 from .util import random_num, repalce_url
 
 # 途牛网址
-TUNIU_URL = 'http://flights.ctrip.com/booking/#{from}-#{to}-day-1.html?DDate1=#{time}'
+TUNIU_URL = 'http://flight.tuniu.com/domestic/list/#{from}_#{to}_ST_1_0_0/?start=#{time}'
 TUNIU_SOURCE = '途牛'
 
 
@@ -29,15 +29,17 @@ class Tuniu():
         @param air_line 要爬取的航班路线
         @param time 要爬取的航班时间
         """
-        url = repalce_url(TUNIU_URL, 'CKG', 'BJS', '2018-02-11')
-        self.__log.debug('获取途牛机票信息 from %s to %s time %s' %
-                         ('CKG', 'BJS', '2018-02-11'))
-        self.__chrome(url)
-        # for value in air_line:
-        #     url = repalce_url(QUNAR_URL, value['from_code'], value['to_code'], time)
-        #     self.__log.debug('获取途牛机票信息 from %s to %s time %s',
-        #                      value['from'], value['to'], time)
-        #     self.__chrome(url)
+        for value in air_line:
+            try:
+                self.__log.debug('获取途牛机票信息 from %s to %s time %s',
+                                 value['from'], value['to'], time)
+                url = repalce_url(
+                    TUNIU_URL, value['from_code'], value['to_code'], time)
+                self.__chrome(url)
+                return
+            except Exception as e:
+                self.__log.debug('获取途牛机票信息失败 from %s to %s time %s Exception: \n%s' % (
+                    value['from'], value['to'], time, e))
 
     def __chrome(self, url):
         """
@@ -49,56 +51,57 @@ class Tuniu():
         self.__browser.implicitly_wait(10)
         self.__browser.get(url)
 
-        index_list = self.__index_list()
+        elements = self.__browser.find_elements_by_xpath(
+            '//div[@class="J-flightlist"]')
+
+        i =0 
+        for e in elements:
+            print(elements[i].find_element_by_xpath(
+                './/div[@class="fl-logo"]//div[@class="aircom"]').text)
+            i = i+1
+        return
+        index_list = random_num(len(elements))
         self.__log.debug('随机抓取10条机票信息: %s' % (index_list))
 
-        airline_element = self.__browser.find_elements_by_xpath(
-            '//div[@class="search_box search_box_tag search_box_light "]//td[@class="logo"]//strong')  # 航空公司信息
-        flight_code_element = self.__browser.find_elements_by_xpath(
-            '//div[@class="search_box search_box_tag search_box_light "]//td[@class="logo"]//div[@class="clearfix J_flight_no"]')  # 航班信息,飞机编号
-        flight_name_element = self.__browser.find_elements_by_xpath(
-            '//div[@class="search_box search_box_tag search_box_light "]//td[@class="logo"]//span[contains(@class, "direction_black_border craft J_craft")]')  # 航班信息,飞机名字
-        depart_time_element = self.__browser.find_elements_by_xpath(
-            '//div[@class="search_box search_box_tag search_box_light "]//td[@class="right"]//strong')  # 出发时间
-        arrive_time_element = self.__browser.find_elements_by_xpath(
-            '//div[@class="search_box search_box_tag search_box_light "]//td[@class="left"]//strong')  # 到达时间
-        depart_airport_element = self.__browser.find_elements_by_xpath(
-            '//div[@class="search_box search_box_tag search_box_light "]//td[@class="right"]//div')  # 出发机场
-        arrive_airport_element = self.__browser.find_elements_by_xpath(
-            '//div[@class="search_box search_box_tag search_box_light "]//td[@class="left"]//div')  # 到达机场
-        price_element = self.__browser.find_elements_by_xpath(
-            '//div[@class="search_box search_box_tag search_box_light "]//td[contains(@class, "price ")]//span[@class="base_price02"]')  # 机票价格
+        airline_elements = self.__browser.find_elements_by_xpath(
+            '//div[@class="J-flightlist"]//div[@class="fl-logo"]//div[@class="aircom"]')  # 航空公司信息
+        flight_elements = self.__browser.find_elements_by_xpath(
+            '//div[@class="J-flightlist"]//div[@class="fl-logo"]//div[@class="flihtnumber left"]')  # 航班信息
+        depart_time_elements = self.__browser.find_elements_by_xpath(
+            '//div[@class="J-flightlist"]//div[@class="fl-depart"]//p[@class="hours"]')  # 出发时间
+        arrive_time_elements = self.__browser.find_elements_by_xpath(
+            '//div[@class="J-flightlist"]//div[@class="fl-arrive"]//span[@class="hours"]/span')  # 到达时间
+        space_time_elements = self.__browser.find_elements_by_xpath(
+            '//div[@class="J-flightlist"]//div[@class="fl-center"]//p[@class="durationTime"]')  # 花费时间
+        depart_airport_elements = self.__browser.find_elements_by_xpath(
+            '//div[@class="J-flightlist"]//div[@class="fl-depart"]//p[@class="airport"]')  # 出发机场
+        arrive_airport_elements = self.__browser.find_elements_by_xpath(
+            '//div[@class="J-flightlist"]//div[@class="fl-arrive"]//p[@class="airport"]')  # 到达机场
+        price_elements = self.__browser.find_elements_by_xpath(
+            '//div[@class="J-flightlist"]//div[@class="price"]//span[@class="num"]')  # 机票价格
+
+        print('airline_elements %d' % (len(airline_elements)))
+        print('flight_elements %d' % (len(flight_elements)))
+        print('depart_time_elements %d' % (len(depart_time_elements)))
+        print('arrive_time_elements %d' % (len(arrive_time_elements)))
+        print('space_time_elements %d' % (len(space_time_elements)))
+        print('depart_airport_elements %d' % (len(depart_airport_elements)))
+        print('arrive_airport_elements %d' % (len(arrive_airport_elements)))
+        print('price_elements %d' % (len(price_elements)))
 
         for index in index_list:
-            e = index * 2 + 1
+            s = index * 2
+            e = s + 1
             air = {
                 'source': TUNIU_SOURCE,
                 'spider_time': datetime.now(),
-                'airline': airline_element[index].text,
-                'flight': flight_code_element[index].get_attribute('data-flight') + ' ' + flight_name_element[index].text,
-                'depart_time': depart_time_element[index].text,
-                'arrive_time': arrive_time_element[index].text,
-                'space_time': '',
-                'depart_airport': depart_airport_element[e].text,
-                'arrive_airport': arrive_airport_element[e].text,
-                'price': int(price_element[index].text.replace('¥', ''))
+                'airline': airline_elements[index].text,
+                'flight': flight_elements[index].text,
+                'depart_time': depart_time_elements[index].text,
+                'arrive_time': arrive_time_elements[index].text,
+                'space_time': space_time_elements[index].text,
+                'depart_airport': depart_airport_elements[index].text,
+                'arrive_airport': arrive_airport_elements[index].text,
+                'price': int(price_elements[index].text)
             }
             self.__dao.insert(air)  # 插入数据库
-
-    def __index_list(self):
-        s_num = 0
-        e_num = 1
-        self.__log.debug('加载所有航班信息...')
-        while e_num > s_num:
-            elements = self.__browser.find_elements_by_xpath(
-                '//div[@class="search_box search_box_tag search_box_light "]')
-            s_num = len(elements)
-
-            elements[s_num - 1].location_once_scrolled_into_view  # 滑动加载所有数据
-            time.sleep(1)  # 延时1秒后再次获取数据
-
-            elements = self.__browser.find_elements_by_xpath(
-                '//div[@class="search_box search_box_tag search_box_light "]')
-            e_num = len(elements)
-            self.__log.debug('滑动页面到底部,s_num %d, e_num %d' % (s_num, e_num))
-        return random_num(e_num)

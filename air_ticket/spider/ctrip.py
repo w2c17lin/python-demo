@@ -29,15 +29,16 @@ class Ctrip():
         @param air_line 要爬取的航班路线
         @param time 要爬取的航班时间
         """
-        url = repalce_url(CTRIP_URL, 'CKG', 'BJS', '2018-02-11')
-        self.__log.debug('获取携程机票信息 from %s to %s time %s' %
-                         ('CKG', 'BJS', '2018-02-11'))
-        self.__chrome(url)
-        # for value in air_line:
-        #     url = repalce_url(QUNAR_URL, value['from_code'], value['to_code'], time)
-        #     self.__log.debug('获取携程机票信息 from %s to %s time %s',
-        #                      value['from'], value['to'], time)
-        #     self.__chrome(url)
+        for value in air_line:
+            try:
+                self.__log.debug('获取携程机票信息 from %s to %s time %s',
+                                 value['from'], value['to'], time)
+                url = repalce_url(
+                    CTRIP_URL, value['from_code'], value['to_code'], time)
+                self.__chrome(url)
+            except Exception as e:
+                self.__log.debug('获取携程机票信息失败 from %s to %s time %s Exception: \n%s' % (
+                    value['from'], value['to'], time, e))
 
     def __chrome(self, url):
         """
@@ -52,21 +53,21 @@ class Ctrip():
         index_list = self.__index_list()
         self.__log.debug('随机抓取10条机票信息: %s' % (index_list))
 
-        airline_element = self.__browser.find_elements_by_xpath(
+        airline_elements = self.__browser.find_elements_by_xpath(
             '//div[@class="search_box search_box_tag search_box_light "]//td[@class="logo"]//strong')  # 航空公司信息
-        flight_code_element = self.__browser.find_elements_by_xpath(
+        flight_code_elements = self.__browser.find_elements_by_xpath(
             '//div[@class="search_box search_box_tag search_box_light "]//td[@class="logo"]//div[@class="clearfix J_flight_no"]')  # 航班信息,飞机编号
-        flight_name_element = self.__browser.find_elements_by_xpath(
+        flight_name_elements = self.__browser.find_elements_by_xpath(
             '//div[@class="search_box search_box_tag search_box_light "]//td[@class="logo"]//span[contains(@class, "direction_black_border craft J_craft")]')  # 航班信息,飞机名字
-        depart_time_element = self.__browser.find_elements_by_xpath(
+        depart_time_elements = self.__browser.find_elements_by_xpath(
             '//div[@class="search_box search_box_tag search_box_light "]//td[@class="right"]//strong')  # 出发时间
-        arrive_time_element = self.__browser.find_elements_by_xpath(
+        arrive_time_elements = self.__browser.find_elements_by_xpath(
             '//div[@class="search_box search_box_tag search_box_light "]//td[@class="left"]//strong')  # 到达时间
-        depart_airport_element = self.__browser.find_elements_by_xpath(
+        depart_airport_elements = self.__browser.find_elements_by_xpath(
             '//div[@class="search_box search_box_tag search_box_light "]//td[@class="right"]//div')  # 出发机场
-        arrive_airport_element = self.__browser.find_elements_by_xpath(
+        arrive_airport_elements = self.__browser.find_elements_by_xpath(
             '//div[@class="search_box search_box_tag search_box_light "]//td[@class="left"]//div')  # 到达机场
-        price_element = self.__browser.find_elements_by_xpath(
+        price_elements = self.__browser.find_elements_by_xpath(
             '//div[@class="search_box search_box_tag search_box_light "]//td[contains(@class, "price ")]//span[@class="base_price02"]')  # 机票价格
 
         for index in index_list:
@@ -74,14 +75,14 @@ class Ctrip():
             air = {
                 'source': CTRIP_SOURCE,
                 'spider_time': datetime.now(),
-                'airline': airline_element[index].text,
-                'flight': flight_code_element[index].get_attribute('data-flight') + ' ' + flight_name_element[index].text,
-                'depart_time': depart_time_element[index].text,
-                'arrive_time': arrive_time_element[index].text,
+                'airline': airline_elements[index].text,
+                'flight': flight_code_elements[index].get_attribute('data-flight') + ' ' + flight_name_elements[index].text,
+                'depart_time': depart_time_elements[index].text,
+                'arrive_time': arrive_time_elements[index].text,
                 'space_time': '',
-                'depart_airport': depart_airport_element[e].text,
-                'arrive_airport': arrive_airport_element[e].text,
-                'price': int(price_element[index].text.replace('¥', ''))
+                'depart_airport': depart_airport_elements[e].text,
+                'arrive_airport': arrive_airport_elements[e].text,
+                'price': int(price_elements[index].text.replace('¥', ''))
             }
             self.__dao.insert(air)  # 插入数据库
 

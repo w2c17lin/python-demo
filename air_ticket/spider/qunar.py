@@ -29,15 +29,18 @@ class Qunar():
         @param air_line 要爬取的航班路线
         @param time 要爬取的航班时间
         """
-        url = repalce_url(QUNAR_URL, '重庆', '北京', '2018-02-11')
-        self.__log.debug('获取去哪儿机票信息 from %s to %s time %s' %
-                         ('重庆', '北京', '2018-02-11'))
-        self.__chrome(url)
-        # for value in air_line:
-        #     url = repalce_url(QUNAR_URL, value['from'], value['to'], time)
-        #     self.__log.debug('获取去哪儿机票信息 from %s to %s time %s',
-        #                      value['from'], value['to'], time)
-        #     self.__chrome(url)
+        for value in air_line:
+            try:
+                self.__log.debug('获取去哪儿机票信息 from %s to %s time %s',
+                                 value['from'], value['to'], time)
+                url = repalce_url(QUNAR_URL, value['from'], value['to'], time)
+                url = repalce_url(QUNAR_URL, '大连', '兰州', time)
+                self.__chrome(url)
+                return
+            except Exception as e:
+                self.__log.debug('获取携程机票信息失败 from %s to %s time %s Exception: \n%s' % (
+                    value['from'], value['to'], time, e))
+                return
 
     def __chrome(self, url):
         """
@@ -58,47 +61,57 @@ class Qunar():
 
             self.__goto_page(page_num)  # 跳转页面
 
+            scroll_element = self.__browser.find_element_by_xpath('//a[@id="__link_contact__"]')
             # 当前页面机票信息元素,用于点击详情获取机票价格
             elements = self.__browser.find_elements_by_xpath(
                 '//div[@class="m-airfly-lst"]//div[@class="e-airfly"]')
             self.__log.debug('点击详情,获取机票价格index %d' % (index))
-            elements[0].location_once_scrolled_into_view
+            scroll_element.location_once_scrolled_into_view
             elements[index].click()
 
-            airline_element = self.__browser.find_elements_by_xpath(
-                '//div[@class="col-airline"]//div[@class="air"]//span')  # 航空公司信息
-            flight_element = self.__browser.find_elements_by_xpath(
-                '//div[@class="col-airline"]//div[@class="num"]//span[@class="n"]')  # 航班信息
-            depart_time_element = self.__browser.find_elements_by_xpath(
-                '//div[@class="col-time"]//div[@class="sep-lf"]//h2')  # 出发时间
-            arrive_time_element = self.__browser.find_elements_by_xpath(
-                '//div[@class="col-time"]//div[@class="sep-rt"]//h2')  # 到达时间
-            space_time_element = self.__browser.find_elements_by_xpath(
-                '//div[@class="col-time"]//div[@class="sep-ct"]//div[@class="range"]')  # 花费时间
-            depart_airport_element = self.__browser.find_elements_by_xpath(
-                '//div[@class="col-time"]//div[@class="sep-lf"]//p[@class="airport"]//span')  # 出发机场
-            arrive_airport_element = self.__browser.find_elements_by_xpath(
-                '//div[@class="col-time"]//div[@class="sep-rt"]//p[@class="airport"]//span')  # 到达机场
+            airline_elements = self.__browser.find_elements_by_xpath(
+                '//div[@class="b-airfly"]//div[@class="col-airline"]//div[@class="air"]//span')  # 航空公司信息
+            flight_elements = self.__browser.find_elements_by_xpath(
+                '//div[@class="b-airfly"]//div[@class="col-airline"]//div[@class="num"]//span[@class="n"]')  # 航班信息
+            depart_time_elements = self.__browser.find_elements_by_xpath(
+                '//div[@class="b-airfly"]//div[@class="col-time"]//div[@class="sep-lf"]//h2')  # 出发时间
+            arrive_time_elements = self.__browser.find_elements_by_xpath(
+                '//div[@class="b-airfly"]//div[@class="col-time"]//div[@class="sep-rt"]//h2')  # 到达时间
+            space_time_elements = self.__browser.find_elements_by_xpath(
+                '//div[@class="b-airfly"]//div[@class="col-time"]//div[@class="sep-ct"]//div[@class="range"]')  # 花费时间
+            depart_airport_elements = self.__browser.find_elements_by_xpath(
+                '//div[@class="b-airfly"]//div[@class="col-time"]//div[@class="sep-lf"]//p[@class="airport"]//span')  # 出发机场
+            arrive_airport_elements = self.__browser.find_elements_by_xpath(
+                '//div[@class="b-airfly"]//div[@class="col-time"]//div[@class="sep-rt"]//p[@class="airport"]//span')  # 到达机场
             price_element = self.__browser.find_element_by_xpath(
-                '//div[@class="clear-both"]//div[@class="prc lowprc"]//span')  # 机票价格
+                '//div[@class="b-airfly"]//div[@class="clear-both"]//div[@class="prc lowprc"]//span')  # 机票价格
+
+            print('airline_elements %d' % (len(airline_elements)))
+            print('flight_elements %d' % (len(flight_elements)))
+            print('depart_time_elements %d' % (len(depart_time_elements)))
+            print('arrive_time_elements %d' % (len(arrive_time_elements)))
+            print('space_time_elements %d' % (len(space_time_elements)))
+            print('depart_airport_elements %d' % (len(depart_airport_elements)))
+            print('arrive_airport_elements %d' % (len(arrive_airport_elements)))
+            # print('price_element %d' % (len(price_element)))
 
             s = index * 2
             e = s + 1
             air = {
                 'source': QUNAR_SOURCE,
                 'spider_time': datetime.now(),
-                'airline': airline_element[index].text,
-                'flight': flight_element[s].text + ' ' + flight_element[e].text,
-                'depart_time': depart_time_element[index].text,
-                'arrive_time': arrive_time_element[index].text,
-                'space_time': space_time_element[index].text,
-                'depart_airport': depart_airport_element[s].text + depart_airport_element[e].text,
-                'arrive_airport': arrive_airport_element[s].text + arrive_airport_element[e].text,
+                'airline': airline_elements[index].text,
+                'flight': flight_elements[s].text + ' ' + flight_elements[e].text,
+                'depart_time': depart_time_elements[index].text,
+                'arrive_time': arrive_time_elements[index].text,
+                'space_time': space_time_elements[index].text,
+                'depart_airport': depart_airport_elements[s].text + depart_airport_elements[e].text,
+                'arrive_airport': arrive_airport_elements[s].text + arrive_airport_elements[e].text,
                 'price': int(price_element.text)
             }
 
             self.__log.debug('收起详情页index %d' % (index))
-            elements[0].location_once_scrolled_into_view
+            scroll_element.location_once_scrolled_into_view
             elements[index].click()
             self.__dao.insert(air)  # 插入数据库
 
