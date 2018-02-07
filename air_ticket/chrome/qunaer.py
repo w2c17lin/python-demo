@@ -1,12 +1,17 @@
 #-*- coding:utf-8 -*-
 import logging
 import time
+from datetime import datetime
+
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 from .util import random_num, repalce_url
 
 # 去哪儿网址
-QUNAER_URL = 'https://flight.qunar.com/site/oneway_list.htm?' + \
-    'searchDepartureAirport=#{from}&searchArrivalAirport=#{to}&searchDepartureTime=#{time}'
+QUNAER_URL = 'https://flight.qunar.com/site/oneway_list.htm?searchDepartureAirport=#{from}&searchArrivalAirport=#{to}&searchDepartureTime=#{time}'
+QUNAER_SOURCE = '去哪儿'
 
 
 class Qunaer():
@@ -15,10 +20,11 @@ class Qunaer():
         构造函数
 
         @param browser 用于爬虫的浏览器
-        @param log 日志工具
+        @param dao 数据库操作
         """
         self.__log = logging.getLogger('app.qunaer')
         self.__browser = browser
+        self.__browser_wait = WebDriverWait(self.__browser, 10)
         self.__dao = dao
 
     def crawling(self, air_line, time):
@@ -28,13 +34,15 @@ class Qunaer():
         @param air_line 要爬取的航班路线
         @param time 要爬取的航班时间
         """
-        for value in air_line:
-            # url = repalce_url(QUNAER_URL, value['from'], value['to'], time)
-            url = repalce_url(QUNAER_URL, '重庆', '北京', '2018-02-11')
-            self.__log.debug('获取去哪儿机票信息 from %s to %s time %s',
-                             '重庆', '北京', '2018-02-11')
-            self.__chrome(url)
-            return
+        url = repalce_url(QUNAER_URL, '重庆', '北京', '2018-02-11')
+        self.__log.debug('获取去哪儿机票信息 from %s to %s time %s' %
+                         ('重庆', '北京', '2018-02-11'))
+        self.__chrome(url)
+        # for value in air_line:
+        #     url = repalce_url(QUNAER_URL, value['from'], value['to'], time)
+        #     self.__log.debug('获取去哪儿机票信息 from %s to %s time %s',
+        #                      value['from'], value['to'], time)
+        #     self.__chrome(url)
 
     def __chrome(self, url):
         """
@@ -42,85 +50,99 @@ class Qunaer():
 
         @param url 已经构造好的网页地址
         """
+        self.__log.debug('打开网页信息...')
         self.__browser.get(url)
         self.__browser.implicitly_wait(10)
-        air = []
 
         index_list = self.__index_list()
-        print(index_list)
-
+        self.__log.debug('随机抓取10条机票信息: %s' % (index_list))
         for i in index_list:
-            page = i // 20 + 1  # 计算要获取数据的页面编号
             index = i % 20  # 计算要获取数据的index位置
-            print(page)
-            print(index)
-            page_elements = self.__browser.find_elements_by_xpath(
-                '//div[@class="m-page"]//a[@class="page"]')
-            for page_element in page_elements:
-                print(page_element.text)
-                if int(page_element.text) == page:
-                    print('sdfdsf')
-                    page_element.click()
-                    self.__browser.implicitly_wait(10)
-                    break
+            page_num = i // 20 + 1  # 计算要获取数据的页面编号
+            self.__log.debug('当前页面 %d, 当前index %d' % (page_num, index))
 
-            # 当前页面机票信息元素
+            self.__goto_page(page_num)  # 跳转页面
+
+            # 当前页面机票信息元素,用于点击详情获取机票价格
             elements = self.__browser.find_elements_by_xpath(
                 '//div[@class="m-airfly-lst"]//div[@class="e-airfly"]')
-
-            print('-------------------------------'+str(len(elements)))
-            print('click................')
-            elements[0].location_once_scrolled_into_view
-            time.sleep(3)
+            self.__log.debug('点击详情,获取机票价格index %d' % (index))
             elements[index].click()
-            time.sleep(3)
-            print('click................over')
+            self.__browser.implicitly_wait(10)
 
             # 航空公司信息
             airline_element = self.__browser.find_elements_by_xpath(
-                '//div[@class="m-airfly-lst"]//div[@class="e-airfly"]//div[@class="col-trip"]//div[@class="col-airline"]//div[@class="air"]//span')
+                '//div[@class="col-airline"]//div[@class="air"]//span')
             # 航班信息
             flight_element = self.__browser.find_elements_by_xpath(
-                '//div[@class="m-airfly-lst"]//div[@class="e-airfly"]//div[@class="col-trip"]//div[@class="col-airline"]//div[@class="num"]//span[@class="n"]')
+                '//div[@class="col-airline"]//div[@class="num"]//span[@class="n"]')
             # 出发时间
             depart_time_element = self.__browser.find_elements_by_xpath(
-                '//div[@class="m-airfly-lst"]//div[@class="e-airfly"]//div[@class="col-trip"]//div[@class="col-time"]//div[@class="sep-lf"]//h2')
+                '//div[@class="col-time"]//div[@class="sep-lf"]//h2')
             # 到达时间
             arrive_time_element = self.__browser.find_elements_by_xpath(
-                '//div[@class="m-airfly-lst"]//div[@class="e-airfly"]//div[@class="col-trip"]//div[@class="col-time"]//div[@class="sep-rt"]//h2')
+                '//div[@class="col-time"]//div[@class="sep-rt"]//h2')
             # 花费时间
             space_time_element = self.__browser.find_elements_by_xpath(
-                '//div[@class="m-airfly-lst"]//div[@class="e-airfly"]//div[@class="col-trip"]//div[@class="col-time"]//div[@class="sep-ct"]//div[@class="range"]')
+                '//div[@class="col-time"]//div[@class="sep-ct"]//div[@class="range"]')
             # 出发机场
             depart_airport_element = self.__browser.find_elements_by_xpath(
-                '//div[@class="m-airfly-lst"]//div[@class="e-airfly"]//div[@class="col-trip"]//div[@class="col-time"]//div[@class="sep-lf"]//p[@class="airport"]//span')
+                '//div[@class="col-time"]//div[@class="sep-lf"]//p[@class="airport"]//span')
             # 到达机场
             arrive_airport_element = self.__browser.find_elements_by_xpath(
-                '//div[@class="m-airfly-lst"]//div[@class="e-airfly"]//div[@class="col-trip"]//div[@class="col-time"]//div[@class="sep-rt"]//p[@class="airport"]//span')
+                '//div[@class="col-time"]//div[@class="sep-rt"]//p[@class="airport"]//span')
+            # 机票价格
+            price_element = self.__browser.find_element_by_xpath(
+                '//div[@class="clear-both"]//div[@class="prc lowprc"]//span')
 
             s = index * 2
             e = s + 1
-            air_info = {
+            air = {
+                'source': QUNAER_SOURCE,
+                'spider_time': datetime.now(),
                 'airline': airline_element[index].text,
                 'flight': flight_element[s].text + ' ' + flight_element[e].text,
                 'depart_time': depart_time_element[index].text,
                 'arrive_time': arrive_time_element[index].text,
                 'space_time': space_time_element[index].text,
                 'depart_airport': depart_airport_element[s].text + depart_airport_element[e].text,
-                'arrive_airport': arrive_airport_element[s].text + arrive_airport_element[e].text
+                'arrive_airport': arrive_airport_element[s].text + arrive_airport_element[e].text,
+                'price': int(price_element.text)
             }
-            air.append(air_info)
-        self.__log.debug(air)
-        return air
+
+            self.__log.debug('收起详情页index %d' % (index))
+            elements[index].click()
+            self.__browser.implicitly_wait(10)
+            # 插入数据库
+            self.__dao.insert(air)
 
     def __index_list(self):
+        """
+        获取当前路线全部数量,并生成该范围的十个随机数
+
+        """
+        self.__log.debug('获取当前路线总数据量....')
         page_elements = self.__browser.find_elements_by_xpath(
             '//div[@class="m-page"]//a[@class="page"]')
         page_num = len(page_elements) + 1
         if page_num > 1:
             page_elements[len(page_elements) - 1].click()
             self.__browser.implicitly_wait(10)
-            time.sleep(3)
         elements = self.__browser.find_elements_by_xpath(
             '//div[@class="m-airfly-lst"]//div[@class="e-airfly"]')
         return random_num(len(elements), page_num)
+
+    def __goto_page(self, page_num):
+        """
+        页面跳转
+
+        @param page_num 要跳转的页面
+        """
+        page_elements = self.__browser.find_elements_by_xpath(
+            '//div[@class="m-page"]//a[@class="page"]')
+        for page_element in page_elements:
+            if int(page_element.text) == page_num:
+                self.__log.debug('跳转到页面 %d' % (page_num))
+                page_element.click()
+                self.__browser.implicitly_wait(10)
+                return

@@ -14,11 +14,13 @@ logging.config.fileConfig('./res/logging.conf')
 dao = MySQLDao('./res/mysql.conf')
 
 # 初始化浏览器
-options = webdriver.ChromeOptions()
-# options.add_argument('headless')
-browser = webdriver.Chrome('./res/chromedriver.exe', chrome_options=options)
+options = webdriver.FirefoxOptions()
+# options.add_argument('--headless')
+browser = webdriver.Firefox(
+    executable_path='./res/geckodriver.exe', firefox_options=options)
 
 qunaer = Qunaer(browser, dao)
 qunaer.crawling(config.AIR_LINE, '2017-01-23')
 
+# dao.close()
 # browser.close()
