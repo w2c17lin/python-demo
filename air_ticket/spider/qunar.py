@@ -87,7 +87,7 @@ class Qunar():
                 './/div[@class="col-time"]//div[@class="sep-lf"]//p[@class="airport"]')  # 出发机场
             arrive_airport_element = elements[index].find_element_by_xpath(
                 './/div[@class="col-time"]//div[@class="sep-rt"]//p[@class="airport"]')  # 到达机场
-            price_element = elements[index].find_element_by_xpath(
+            price_elements = elements[index].find_elements_by_xpath(
                 './/div[@class="clear-both"]//div[contains(@class, "prc")]//span')  # 机票价格
 
             air = {
@@ -102,7 +102,7 @@ class Qunar():
                 'space_time': space_time_element.text,
                 'depart_airport': depart_airport_element.text,
                 'arrive_airport': arrive_airport_element.text,
-                'price': int(price_element.text)
+                'price': self.__get_price(price_elements)
             }
 
             self.__log.debug('收起详情页index %d' % (index))
@@ -142,6 +142,18 @@ class Qunar():
             return res[:-3]
         else:
             return res[:-1]
+
+    def __get_price(self, price_elements):
+        """
+        获取机票价格,默认获取第一个价格,没有价格的时候返回-1
+
+        @param price_elements 价格信息元素列表
+        @return 价格int类型
+        """
+        if len(price_elements) > 0:
+            return int(price_elements[0].text)
+        else:
+            return -1
 
     def __index_list(self):
         """

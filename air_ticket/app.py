@@ -33,14 +33,21 @@ ctrip = Ctrip(browser, dao)
 tuniu = Tuniu(browser, dao)
 
 # 开始爬取
+spider_time = 1
 while True:
+    start_time = time.clock()
     date = datetime.date.today() + datetime.timedelta(days=1)
     str_time = date.strftime('%Y-%m-%d')
+
     log.debug('开始爬取数据 time %s' % (str_time))
     qunar.crawling(config.AIR_LINE, str_time)
     ctrip.crawling(config.AIR_LINE, str_time)
     tuniu.crawling(config.AIR_LINE, str_time)
-    log.debug('爬取数据完成 sleep time: %ds ...' % (config.INTERVAL_TIME))
+
+    space_time = time.clock() - start_time
+    log.debug('第%d轮爬取数据完成, 耗时 %ds, 休眠时间 %ds' %
+              (spider_time, space_time, config.INTERVAL_TIME))
+    spider_time += 1
     time.sleep(config.INTERVAL_TIME)
 
 # 结束

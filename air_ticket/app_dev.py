@@ -15,7 +15,7 @@ from utils.dao import MySQLDao
 # 设置默认参数
 headless = False
 date = datetime.date.today() + datetime.timedelta(days=1)
-time = date.strftime('%Y-%m-%d')
+str_time = date.strftime('%Y-%m-%d')
 # air_line = config.AIR_LINE
 air_line = config.AIR_LINE_DEV
 
@@ -49,9 +49,9 @@ ctrip = Ctrip(browser, dao)
 tuniu = Tuniu(browser, dao)
 
 # 开始爬取
-qunar.crawling(air_line, time)
-ctrip.crawling(air_line, time)
-tuniu.crawling(air_line, time)
+qunar.crawling(air_line, str_time)
+ctrip.crawling(air_line, str_time)
+tuniu.crawling(air_line, str_time)
 
 # 结束
 dao.close()

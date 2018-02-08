@@ -32,7 +32,7 @@ CREATE TABLE `air_ticket` (
   `space_time` varchar(255) DEFAULT NULL COMMENT '花费时间',
   `depart_airport` varchar(255) DEFAULT NULL COMMENT '出发机场',
   `arrive_airport` varchar(255) DEFAULT NULL COMMENT '到达机场',
-  `price` decimal(10,2) DEFAULT NULL COMMENT '价格',
+  `price` decimal(10,2) DEFAULT NULL COMMENT '价格 -1时代表获取失败',
   `create_time` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)

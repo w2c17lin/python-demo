@@ -5,10 +5,10 @@ INTERVAL_TIME = 3 * 60 * 60
 
 AIR_LINE_DEV = [
     {
-        'from': '成都',
-        'from_code': 'CTU',
-        'to': '昆明',
-        'to_code': 'KMG'
+        'from': '深圳',
+        'from_code': 'SZX',
+        'to': '重庆',
+        'to_code': 'CKG'
     }
 ]
 
