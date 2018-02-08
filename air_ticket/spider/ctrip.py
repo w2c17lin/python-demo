@@ -20,6 +20,7 @@ class Ctrip():
         """
         self.__log = logging.getLogger('app.ctrip')
         self.__browser = browser
+        self.__browser.implicitly_wait(10)
         self.__dao = dao
 
     def crawling(self, air_line, time):
@@ -33,60 +34,67 @@ class Ctrip():
             try:
                 self.__log.debug('获取携程机票信息 from %s to %s time %s',
                                  value['from'], value['to'], time)
-                url = repalce_url(
-                    CTRIP_URL, value['from_code'], value['to_code'], time)
-                self.__chrome(url)
+                value['time'] = time
+                self.__chrome(value)
             except Exception as e:
-                self.__log.debug('获取携程机票信息失败 from %s to %s time %s Exception: \n%s' % (
+                self.__log.debug('获取携程机票信息失败 from %s to %s time %s Exception: %s' % (
                     value['from'], value['to'], time, e))
 
-    def __chrome(self, url):
+    def __chrome(self, air_line):
         """
         开始获取数据
 
         @param url 已经构造好的网页地址
         """
+        url = repalce_url(
+            CTRIP_URL, air_line['from_code'], air_line['to_code'], air_line['time'])
         self.__log.debug('打开网页信息...')
-        self.__browser.implicitly_wait(10)
         self.__browser.get(url)
 
-        index_list = self.__index_list()
+        self.__scroll_page()
+        elements = self.__browser.find_elements_by_xpath(
+            '//div[@class="search_box search_box_tag search_box_light "]')
+        index_list = random_num(len(elements))
         self.__log.debug('随机抓取10条机票信息: %s' % (index_list))
 
-        airline_elements = self.__browser.find_elements_by_xpath(
-            '//div[@class="search_box search_box_tag search_box_light "]//td[@class="logo"]//strong')  # 航空公司信息
-        flight_code_elements = self.__browser.find_elements_by_xpath(
-            '//div[@class="search_box search_box_tag search_box_light "]//td[@class="logo"]//div[@class="clearfix J_flight_no"]')  # 航班信息,飞机编号
-        flight_name_elements = self.__browser.find_elements_by_xpath(
-            '//div[@class="search_box search_box_tag search_box_light "]//td[@class="logo"]//span[contains(@class, "direction_black_border craft J_craft")]')  # 航班信息,飞机名字
-        depart_time_elements = self.__browser.find_elements_by_xpath(
-            '//div[@class="search_box search_box_tag search_box_light "]//td[@class="right"]//strong')  # 出发时间
-        arrive_time_elements = self.__browser.find_elements_by_xpath(
-            '//div[@class="search_box search_box_tag search_box_light "]//td[@class="left"]//strong')  # 到达时间
-        depart_airport_elements = self.__browser.find_elements_by_xpath(
-            '//div[@class="search_box search_box_tag search_box_light "]//td[@class="right"]//div')  # 出发机场
-        arrive_airport_elements = self.__browser.find_elements_by_xpath(
-            '//div[@class="search_box search_box_tag search_box_light "]//td[@class="left"]//div')  # 到达机场
-        price_elements = self.__browser.find_elements_by_xpath(
-            '//div[@class="search_box search_box_tag search_box_light "]//td[contains(@class, "price ")]//span[@class="base_price02"]')  # 机票价格
-
         for index in index_list:
-            e = index * 2 + 1
+            airline_element = elements[index].find_element_by_xpath(
+                './/td[@class="logo"]//strong')  # 航空公司信息
+            flight_code_element = elements[index].find_element_by_xpath(
+                './/td[@class="logo"]//div[@class="clearfix J_flight_no"]')  # 航班信息,飞机编号
+            flight_name_element = elements[index].find_element_by_xpath(
+                './/td[@class="logo"]//span[contains(@class, "direction_black_border craft J_craft")]')  # 航班信息,飞机名字
+            depart_time_element = elements[index].find_element_by_xpath(
+                './/td[@class="right"]//strong')  # 出发时间
+            arrive_time_element = elements[index].find_element_by_xpath(
+                './/td[@class="left"]//strong')  # 到达时间
+            depart_airport_element = elements[index].find_element_by_xpath(
+                './/td[@class="right"]//div[last()]')  # 出发机场
+            arrive_airport_element = elements[index].find_element_by_xpath(
+                './/td[@class="left"]//div[last()]')  # 到达机场
+            price_element = elements[index].find_element_by_xpath(
+                './/td[contains(@class, "price ")]//span[@class="base_price02"]')  # 机票价格
             air = {
                 'source': CTRIP_SOURCE,
-                'spider_time': datetime.now(),
-                'airline': airline_elements[index].text,
-                'flight': flight_code_elements[index].get_attribute('data-flight') + ' ' + flight_name_elements[index].text,
-                'depart_time': depart_time_elements[index].text,
-                'arrive_time': arrive_time_elements[index].text,
+                'time': air_line['time'],
+                'depart': air_line['from'],
+                'arrive': air_line['to'],
+                'airline': airline_element.text,
+                'flight': flight_code_element.get_attribute('data-flight') + ' ' + flight_name_element.text,
+                'depart_time': depart_time_element.text,
+                'arrive_time': arrive_time_element.text,
                 'space_time': '',
-                'depart_airport': depart_airport_elements[e].text,
-                'arrive_airport': arrive_airport_elements[e].text,
-                'price': int(price_elements[index].text.replace('¥', ''))
+                'depart_airport': depart_airport_element.text,
+                'arrive_airport': arrive_airport_element.text,
+                'price': int(price_element.text.replace('¥', ''))
             }
             self.__dao.insert(air)  # 插入数据库
 
-    def __index_list(self):
+    def __scroll_page(self):
+        """
+        由于携程是下滑加载元素,所以页面进入后开始模拟用户下滑操作,加载所有机票信息
+
+        """
         s_num = 0
         e_num = 1
         self.__log.debug('加载所有航班信息...')
@@ -101,5 +109,4 @@ class Ctrip():
             elements = self.__browser.find_elements_by_xpath(
                 '//div[@class="search_box search_box_tag search_box_light "]')
             e_num = len(elements)
-            self.__log.debug('滑动页面到底部,s_num %d, e_num %d' % (s_num, e_num))
-        return random_num(e_num)
+            self.__log.debug('滑动页面到底部, s_num %d, e_num %d' % (s_num, e_num))

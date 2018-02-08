@@ -43,15 +43,16 @@ class MySQLDao():
 
         @param data 要插入的数据,字典类型
         """
-        sql = 'insert into air_ticket(source, spider_time, airline, flight, depart_time, arrive_time, space_time, depart_airport, arrive_airport, price, create_time) VALUES ("%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%d", "%s")' % \
-            (data['source'], data['spider_time'].strftime("%Y-%m-%d %H:%M:%S"), data['airline'], data['flight'], data['depart_time'], data['arrive_time'],
+        sql = 'insert into air_ticket(source, time, depart, arrive, flight, airline, depart_time, arrive_time, space_time, depart_airport, arrive_airport, price, create_time) ' + \
+            'VALUES ("%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%d", "%s")' % \
+            (data['source'], data['time'], data['depart'], data['arrive'], data['flight'], data['airline'], data['depart_time'], data['arrive_time'],
              data['space_time'], data['depart_airport'], data['arrive_airport'], data['price'], datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         self.__log.debug(sql)
         try:
             self.__cursor.execute(sql)
             self.__db.commit()
         except Exception as e:
-            self.__log.error('插入数据库失败 Exception: \n%s' % e)
+            self.__log.error('插入数据库失败 Exception: %s' % e)
 
     def close(self):
         if not self.__db._closed:

@@ -3,6 +3,15 @@
 # 获取数据间隔时间
 INTERVAL_TIME = 3 * 60 * 60
 
+AIR_LINE_DEV = [
+    {
+        'from': '成都',
+        'from_code': 'CTU',
+        'to': '昆明',
+        'to_code': 'KMG'
+    }
+]
+
 # 航班路线,共8个
 AIR_LINE = [
     {
