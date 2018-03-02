@@ -26,7 +26,7 @@ except getopt.GetoptError:
     sys.exit(2)
 for opt, arg in opts:
     if opt in ("-t", "--time"):
-        time = arg
+        str_time = arg
     elif opt in ('-h', '--headless'):
         headless = True
 
