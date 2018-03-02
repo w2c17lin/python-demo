@@ -10,10 +10,10 @@
       "request": "launch",
       "stopOnEntry": true,
       "pythonPath": "${config:python.pythonPath}",
-      "program": "${workspaceFolder}/air_ticket/app_dev.py",
-      "cwd": "${workspaceFolder}/air_ticket",
+      "program": "${workspaceFolder}/app_dev.py",
+      "cwd": "${workspaceFolder}/",
       "env": {},
-      "envFile": "${workspaceFolder}/air_ticket/.env",
+      "envFile": "${workspaceFolder}/.env",
       "debugOptions": ["RedirectOutput"]
     },
     {
